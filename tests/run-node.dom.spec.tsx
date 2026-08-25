@@ -48,7 +48,6 @@ describe('MultiVersionRunNode', () => {
       useRuns: <Selected,>(selector: (state: RunsView) => Selected): Selected => selector(view),
       ensure,
       cancel: vi.fn(async () => {}),
-      result: vi.fn(),
       t: (key: keyof typeof zh) => zh[key],
     } as unknown as MultiVersionRunNodeProps
 

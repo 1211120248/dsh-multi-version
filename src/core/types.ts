@@ -75,14 +75,6 @@ export type RunView = Omit<RunRecord, 'sourceWorkspace' | 'runDirectory' | 'vers
   readonly versions: readonly VersionView[]
 }
 
-/** Host-authorized full response for one completed candidate. */
-export interface VersionResult {
-  readonly runId: string
-  readonly versionId: string
-  readonly title: string
-  readonly markdown: string
-}
-
 /** Candidate input supplied to a runtime adapter. */
 export interface CandidateExecutionRequest {
   readonly runId: string

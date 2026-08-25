@@ -6,6 +6,13 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Replaced full-response result dialogs with per-version status, duration, and
+  concise summaries plus a workspace-relative generated-file location.
+- Marked transient candidate and planner children with DSH's one-shot
+  subagent descriptor so session surfaces classify them correctly.
+
 ### Added
 
 - Independent open-source project metadata and community documentation.
@@ -20,6 +27,6 @@ and this project follows [Semantic Versioning](https://semver.org/).
 - Optional planner mode with strict distinct-brief validation.
 - Isolated base snapshots and per-candidate workspaces.
 - Bounded candidate concurrency and cancellable execution.
-- Durable transcript run nodes, full-response viewing, and restart recovery.
+- Durable transcript run nodes and restart recovery.
 - Deterministic local `SUMMARY.md` and `index.json` generation.
 - English and Chinese product documentation.

@@ -1,4 +1,4 @@
-import type { CapturedSubmission, RunOptions, RunView, StartRunRequest, VersionResult } from '../core/types.ts'
+import type { CapturedSubmission, RunOptions, RunView, StartRunRequest } from '../core/types.ts'
 
 /** Two-phase composer capture backed by DSH session input state and codecs. */
 export interface PreparedComposerSubmission {
@@ -15,7 +15,6 @@ export interface MultiVersionHostTransport {
   start(request: StartRunRequest): Promise<{ readonly runId: string }>
   cancel(sessionId: string, runId: string): Promise<boolean>
   runs(sessionId: string): Promise<readonly RunView[]>
-  result(sessionId: string, runId: string, versionId: string): Promise<VersionResult>
 }
 
 export interface StartOutcome {

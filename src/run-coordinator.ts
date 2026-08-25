@@ -1,4 +1,4 @@
-import { readFile, realpath, rm } from 'node:fs/promises'
+import { realpath, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import { runBounded } from './core/bounded-executor.ts'
 import { safeRunId, validateBriefs, validateStartRequest, versionId } from './core/invariant.ts'
@@ -12,7 +12,6 @@ import type {
   VersionBrief,
   VersionPlanner,
   VersionRecord,
-  VersionResult,
   WorkspaceResolver,
 } from './core/types.ts'
 import { RunLedger, writeJsonAtomic, writeTextAtomic } from './run-ledger.ts'
@@ -95,24 +94,6 @@ export class RunCoordinator {
     }
     const ledger = await this.ledgerFor(workspace)
     return ledger.snapshot().filter(run => run.sessionId === sessionId)
-  }
-
-  /** Return one completed response after resolving its exact session workspace ledger. */
-  async resultForSession(sessionId: string, runId: string, requestedVersionId: string): Promise<VersionResult> {
-    const workspace = await realpath(await this.dependencies.workspaceResolver.resolve(sessionId))
-    const ledger = await this.ledgerFor(workspace)
-    const run = ledger.get(runId)
-    if (run === undefined || run.sessionId !== sessionId) throw new Error('run is not owned by this session')
-    const version = run.versions.find(candidate => candidate.id === requestedVersionId)
-    if (version === undefined) throw new Error('unknown version')
-    if (version.phase !== 'completed') throw new Error('version result is not complete')
-    const markdown = await readFile(join(run.runDirectory, version.relativeDirectory, 'response.md'), 'utf8')
-    return {
-      runId,
-      versionId: version.id,
-      title: version.title ?? `Version ${version.index}`,
-      markdown,
-    }
   }
 
   private emit(): void {

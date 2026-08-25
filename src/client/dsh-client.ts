@@ -4,7 +4,6 @@ import type {
   RunView,
   StartRunRequest,
   SubmissionPart,
-  VersionResult,
 } from '../core/types.ts'
 import type {
   ConversationInputAdapter,
@@ -267,10 +266,6 @@ export class DshMultiVersionTransport implements MultiVersionHostTransport {
 
   async runs(sessionId: string): Promise<readonly RunView[]> {
     return this.get<readonly RunView[]>('runs', { sessionId })
-  }
-
-  async result(sessionId: string, runId: string, versionId: string): Promise<VersionResult> {
-    return this.get<VersionResult>('result', { sessionId, runId, versionId })
   }
 
   private async get<T>(route: string, values: Record<string, string>): Promise<T> {

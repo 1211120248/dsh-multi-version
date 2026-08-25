@@ -39,9 +39,39 @@ interface AttachmentServiceLike {
 
 interface AgentContextLike {
   get(name: string): unknown
+  on?: (
+    event: 'agent/pre-step',
+    handler: (
+      input: { readonly agent: { readonly session: { append(type: string, data: unknown): unknown } } },
+      next: () => Promise<{ readonly kind?: string }>,
+    ) => Promise<unknown>,
+  ) => unknown
   readonly systemPrompt?: {
     context(input: { readonly name: string; readonly order: number; readonly text: string }): unknown
   }
+}
+
+const ONE_SHOT_DESCRIPTOR_VERSION = 2
+
+function installOneShotDescriptor(childContext: unknown, label: string): void {
+  const context = childContext as AgentContextLike
+  if (typeof context.on !== 'function') {
+    throw new Error('dsh-multi-version requires the DSH agent/pre-step lifecycle for one-shot child classification')
+  }
+  let appended = false
+  context.on('agent/pre-step', async ({ agent }, next) => {
+    const decision = await next()
+    if (!appended && decision.kind === 'enter') {
+      appended = true
+      agent.session.append('subagent/descriptor', {
+        version: ONE_SHOT_DESCRIPTOR_VERSION,
+        mode: 'one-shot',
+        provider: 'multi-version',
+        label,
+      })
+    }
+    return decision
+  })
 }
 
 interface AgentLike {
@@ -198,6 +228,7 @@ class DshChildRunner {
     cwd: string,
     content: readonly ContentBlockLike[],
     signal: AbortSignal,
+    label: string,
   ): Promise<readonly ContentBlockLike[]> {
     signal.throwIfAborted()
     const parent = this.agents.get(parentSession)
@@ -235,11 +266,13 @@ class DshChildRunner {
         agentOptions,
         setup: (childContext: unknown) => {
           this.presets?.composeFrom(childContext, parent.ctx)
-          ;(childContext as AgentContextLike).systemPrompt?.context({
+          const context = childContext as AgentContextLike
+          context.systemPrompt?.context({
             name: 'subagent:delegation',
             order: 120,
             text: 'You are a delegated subagent: your permission scope was fixed when you were started and cannot be widened from inside this session. Operations that require approval are rejected automatically.',
           })
+          installOneShotDescriptor(context, label)
         },
       })
       if (sandboxMode !== undefined) {
@@ -308,6 +341,7 @@ export class DshCandidateExecutor implements CandidateExecutor {
       request.cwd,
       await candidateContent(request, this.attachments),
       signal,
+      `multi-version candidate ${request.versionId}`,
     )
     return { markdown: markdownOf(output), raw: jsonValueOf(output) }
   }
@@ -370,6 +404,7 @@ export class DshVersionPlanner implements VersionPlanner {
       request.cwd,
       await plannerContent(request.submission, request.requestedCount, this.attachments),
       signal,
+      `multi-version planner ${request.runId}`,
     )
     return parsePlannerOutput(markdownOf(output), request.requestedCount)
   }

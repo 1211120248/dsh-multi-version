@@ -20,7 +20,6 @@ import { en, type MultiVersionLocaleKey, NS, zh } from './locales.ts'
 
 export type { MultiVersionText } from './MultiVersionControl.tsx'
 export { MultiVersionControl, textFromDictionary } from './MultiVersionControl.tsx'
-export { ResultDialog } from './ResultDialog.tsx'
 export { RunSummaryPanel } from './RunSummaryPanel.tsx'
 export type * from './input-adapter.ts'
 
@@ -117,7 +116,6 @@ export function apply(ctx: ClientContext): void {
         hooks: { runs: controller },
         ensure: () => controller.ensure(),
         cancel: runId => controller.cancel(runId),
-        result: (runId, versionId) => controller.result(runId, versionId),
       }
     },
   }, MultiVersionRunNode))

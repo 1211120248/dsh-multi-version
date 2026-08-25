@@ -1,4 +1,4 @@
-import type { RunView, VersionResult } from '../core/types.ts'
+import type { RunView } from '../core/types.ts'
 import type { MultiVersionHostTransport } from './input-adapter.ts'
 
 export interface RunsView {
@@ -62,10 +62,6 @@ export class MultiVersionRunController {
   async cancel(runId: string): Promise<void> {
     await this.transport.cancel(this.sessionId, runId)
     await this.refresh()
-  }
-
-  async result(runId: string, versionId: string): Promise<VersionResult> {
-    return this.transport.result(this.sessionId, runId, versionId)
   }
 
   dispose(): void {

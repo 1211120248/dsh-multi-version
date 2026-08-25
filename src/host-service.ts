@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import { validateSessionId } from './core/invariant.ts'
 import { MULTI_VERSION_API_PREFIX, parseActionEnvelope } from './core/protocol.ts'
 import { toRunView } from './core/run-view.ts'
-import type { RunPhase, RunRecord, RunView, RuntimeSources, VersionResult } from './core/types.ts'
+import type { RunPhase, RunRecord, RunView, RuntimeSources } from './core/types.ts'
 import { RunCoordinator, type RunRecordPublicationReason } from './run-coordinator.ts'
 import {
   DshCandidateExecutor,
@@ -105,12 +105,6 @@ function sessionIdFrom(url: URL): string {
   return sessionId
 }
 
-function identifierFrom(url: URL, name: 'runId' | 'versionId', pattern: RegExp): string {
-  const value = url.searchParams.get(name) ?? ''
-  if (!pattern.test(value)) throw new Error(`invalid ${name}`)
-  return value
-}
-
 /** Host authority for route admission, workspace derivation, child execution, and ledger reads. */
 export class MultiVersionHostService {
   readonly coordinator: RunCoordinator
@@ -190,9 +184,6 @@ export class MultiVersionHostService {
     return (await this.coordinator.runsForSession(sessionId)).map(toRunView)
   }
 
-  async result(sessionId: string, runId: string, versionId: string): Promise<VersionResult> {
-    return this.coordinator.resultForSession(sessionId, runId, versionId)
-  }
 }
 
 /** Register the loopback-only HTTP face beneath the existing DSH Web server. */
@@ -223,13 +214,6 @@ export function installHostRoutes(context: unknown): MultiVersionHostService {
         }
         if (request.method === 'GET' && url.pathname === `${API_ROOT}/runs`) {
           send(response, 200, { ok: true, value: await service.runs(sessionIdFrom(url)) })
-          return
-        }
-        if (request.method === 'GET' && url.pathname === `${API_ROOT}/result`) {
-          const sessionId = sessionIdFrom(url)
-          const runId = identifierFrom(url, 'runId', /^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/)
-          const versionId = identifierFrom(url, 'versionId', /^version-[0-9]{2}$/)
-          send(response, 200, { ok: true, value: await service.result(sessionId, runId, versionId) })
           return
         }
         send(response, 404, { ok: false, error: 'not found' })

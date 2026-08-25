@@ -28,7 +28,7 @@ function fakeRuntime(workspace: string) {
     get: vi.fn((id: string) => id === 'session-1' ? parent : undefined),
     create: vi.fn(async (options: { meta: { cwd: string }; setup?: (ctx: unknown) => void }) => {
       childCwds.push(options.meta.cwd)
-      options.setup?.({ systemPrompt: { context: vi.fn() } })
+      options.setup?.({ systemPrompt: { context: vi.fn() }, on: () => {} })
       return {
         agent: {
           id: `child-${childCwds.length}`,
@@ -105,13 +105,6 @@ describe('MultiVersionHostService', () => {
       kind: 'success',
       text: '2 versions completed.',
     })
-    await expect(service.result('session-1', runId, 'version-01')).resolves.toEqual({
-      runId,
-      versionId: 'version-01',
-      title: 'Candidate 1',
-      markdown: '# Candidate 1\n\nDone.\n',
-    })
-    await expect(service.result('session-1', runId, 'version-99')).rejects.toThrow('unknown version')
   })
 
   it('fails malformed browser actions before creating work', async () => {

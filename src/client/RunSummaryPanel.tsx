@@ -6,7 +6,6 @@ import styles from './multi-version.module.css'
 export interface RunSummaryPanelProps {
   readonly run: RunView
   readonly dictionary?: Record<MultiVersionLocaleKey, string>
-  readonly onOpenResult?: (runId: string, versionId: string, title: string) => void
   readonly onCancel?: (runId: string) => void
 }
 
@@ -28,7 +27,22 @@ function versionStatus(dictionary: Record<MultiVersionLocaleKey, string>, versio
   return dictionary['phase.failed']
 }
 
-export function RunSummaryPanel({ run, dictionary = zh, onOpenResult, onCancel }: RunSummaryPanelProps): JSX.Element {
+function durationLabel(dictionary: Record<MultiVersionLocaleKey, string>, durationMs: number | undefined): string {
+  if (durationMs === undefined) return dictionary.durationUnavailable
+  if (durationMs < 1_000) return format(dictionary, 'durationMilliseconds', { value: String(durationMs) })
+  const seconds = Math.floor(durationMs / 1_000)
+  if (seconds < 60) return format(dictionary, 'durationSeconds', { value: String(seconds) })
+  return format(dictionary, 'durationMinutes', {
+    minutes: String(Math.floor(seconds / 60)),
+    seconds: String(seconds % 60),
+  })
+}
+
+function terminal(phase: RunView['phase']): boolean {
+  return phase === 'completed' || phase === 'cancelled' || phase === 'failed' || phase === 'interrupted'
+}
+
+export function RunSummaryPanel({ run, dictionary = zh, onCancel }: RunSummaryPanelProps): JSX.Element {
   const cancellable = run.phase === 'preparing' || run.phase === 'planning' || run.phase === 'running'
   return (
     <section className={styles.runCard} data-dsh-plugin="multi-version" data-dsh-part="run-summary" aria-label={run.promptPreview}>
@@ -51,27 +65,20 @@ export function RunSummaryPanel({ run, dictionary = zh, onOpenResult, onCancel }
           <li key={version.id} className={styles.versionRow}>
             <div>
               <strong>{version.title ?? format(dictionary, 'versionFallback', { index: String(version.index) })}</strong>
-              <span>{version.introduction ?? version.error ?? versionStatus(dictionary, version)}</span>
+              <span>{format(dictionary, 'versionIntroduction', {
+                value: version.introduction ?? version.error ?? versionStatus(dictionary, version),
+              })}</span>
             </div>
             <div className={styles.versionActions}>
-              <span>{versionStatus(dictionary, version)}</span>
-              {version.phase === 'completed' && onOpenResult !== undefined && (
-                <Button
-                  variant="toolbar"
-                  size="sm"
-                  onClick={() => onOpenResult(
-                    run.id,
-                    version.id,
-                    version.title ?? format(dictionary, 'versionFallback', { index: String(version.index) }),
-                  )}
-                >
-                  {dictionary.openResult}
-                </Button>
-              )}
+              <span>{format(dictionary, 'versionStatus', { value: versionStatus(dictionary, version) })}</span>
+              <span>{format(dictionary, 'versionDuration', { value: durationLabel(dictionary, version.durationMs) })}</span>
             </div>
           </li>
         ))}
       </ol>
+      {terminal(run.phase) && (
+        <p className={styles.outputHint}>{format(dictionary, 'outputHint', { runId: run.id })}</p>
+      )}
     </section>
   )
 }

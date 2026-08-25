@@ -192,6 +192,8 @@
 
 .versionActions {
   flex: none;
+  align-items: flex-end;
+  flex-direction: column;
 }
 
 .versionActions > span {
@@ -200,38 +202,12 @@
   line-height: 18px;
 }
 
-.resultDialog {
-  width: min(760px, 100%);
-  max-height: min(82vh, 860px);
-}
-
-.resultBody {
-  display: grid;
-  gap: 12px;
-  min-height: 0;
-}
-
-.resultState {
+.outputHint {
   margin: 0;
   color: var(--dsw-alias-label-secondary);
-  font-size: 13px;
-  line-height: 20px;
-}
-
-.resultContent {
-  box-sizing: border-box;
-  min-height: 180px;
-  max-height: min(58vh, 640px);
-  overflow: auto;
-  margin: 0;
-  border: 1px solid var(--dsw-alias-border-l2);
-  border-radius: 10px;
-  background: var(--dsw-alias-markdown-code-block);
-  color: var(--dsw-alias-label-primary);
-  padding: 14px;
-  white-space: pre-wrap;
+  font-size: 12px;
+  line-height: 18px;
   overflow-wrap: anywhere;
-  font: var(--dsw-font-markdown-code-block);
 }
 
 @supports (height: 100dvh) {
@@ -253,9 +229,5 @@
   .versionRow {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .resultDialog {
-    width: 100%;
   }
 }

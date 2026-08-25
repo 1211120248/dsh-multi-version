@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { cleanup, render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it } from 'vitest'
 import { RunSummaryPanel } from '../src/client/RunSummaryPanel.tsx'
 import type { RunView } from '../src/core/types.ts'
 
@@ -19,20 +19,22 @@ const run: RunView = {
   promptPreview: '实现登录功能',
   warnings: [],
   versions: [
-    { id: 'version-01', index: 1, phase: 'completed', title: '本地登录', introduction: '账号密码实现。' },
-    { id: 'version-02', index: 2, phase: 'completed', title: 'OAuth', introduction: '第三方授权实现。' },
+    { id: 'version-01', index: 1, phase: 'completed', title: '本地登录', introduction: '账号密码实现。', durationMs: 840 },
+    { id: 'version-02', index: 2, phase: 'completed', title: 'OAuth', introduction: '第三方授权实现。', durationMs: 73_000 },
   ],
 }
 
 describe('RunSummaryPanel', () => {
-  it('presents all versions in one compact transcript summary without ranking', () => {
-    const open = vi.fn()
-    const { container } = render(<RunSummaryPanel run={run} onOpenResult={open} />)
+  it('presents status, duration, and summaries with a workspace-relative file location', () => {
+    const { container } = render(<RunSummaryPanel run={run} />)
     expect(container.querySelector('[data-dsh-part="run-summary"]')).not.toBeNull()
     expect(screen.getByText('本地登录')).toBeTruthy()
-    expect(screen.getByText('第三方授权实现。')).toBeTruthy()
+    expect(screen.getByText('简介：第三方授权实现。')).toBeTruthy()
+    expect(screen.getAllByText('状态：已完成')).toHaveLength(2)
+    expect(screen.getByText('耗时：840 毫秒')).toBeTruthy()
+    expect(screen.getByText('耗时：1 分 13 秒')).toBeTruthy()
+    expect(screen.getByText(/\.multi-version\/run-1\/versions\/<版本编号>\/workspace/)).toBeTruthy()
     expect(screen.queryByText('最佳版本')).toBeNull()
-    fireEvent.click(screen.getAllByRole('button', { name: '查看完整结果' })[1]!)
-    expect(open).toHaveBeenCalledWith('run-1', 'version-02', 'OAuth')
+    expect(screen.queryByRole('button', { name: '查看完整结果' })).toBeNull()
   })
 })

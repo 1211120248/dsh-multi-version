@@ -2,6 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { DshCandidateExecutor, DshVersionPlanner } from '../src/dsh-runtime.ts'
 import type { CandidateExecutionRequest, VersionPlannerRequest } from '../src/core/types.ts'
 
+type PreStepHandler = (
+  input: { readonly agent: { readonly session: { append(type: string, data: unknown): unknown } } },
+  next: () => Promise<{ readonly kind?: string }>,
+) => Promise<unknown>
+
 function runtime(finalText: string) {
   const followup = vi.fn()
   const cancel = vi.fn()
@@ -10,6 +15,7 @@ function runtime(finalText: string) {
   const composeFrom = vi.fn()
   const composedPreset = vi.fn(() => 'preset-a')
   const promptContext = vi.fn()
+  let preStep: PreStepHandler | undefined
   const parent = {
     id: 'parent-session',
     options: { provider: 'provider-a', model: 'model-a', maxTokens: 1234, subagentDepth: 2, ignored: true },
@@ -49,7 +55,10 @@ function runtime(finalText: string) {
     cancel,
   }
   const create = vi.fn(async (options: { setup?: (ctx: unknown) => void }) => {
-    options.setup?.({ systemPrompt: { context: promptContext } })
+    options.setup?.({
+      systemPrompt: { context: promptContext },
+      on: (_event: 'agent/pre-step', handler: PreStepHandler) => { preStep = handler },
+    })
     return { agent: child, dispose }
   })
   const agents = { get: vi.fn((id: string) => id === 'parent-session' ? parent : undefined), create }
@@ -60,7 +69,13 @@ function runtime(finalText: string) {
     }))),
   }
   const presets = { composeFrom, composedPreset }
-  return { agents, attachments, presets, parent, child, create, followup, cancel, append, dispose, composeFrom, promptContext }
+  return {
+    agents, attachments, presets, parent, child, create, followup, cancel, append, dispose, composeFrom, promptContext,
+    invokePreStep: async () => {
+      if (preStep === undefined) throw new Error('pre-step lifecycle was not registered')
+      await preStep({ agent: child }, async () => ({ kind: 'enter' }))
+    },
+  }
 }
 
 function request(): CandidateExecutionRequest {
@@ -97,6 +112,13 @@ describe('DSH runtime adapters', () => {
     expect(bench.promptContext).toHaveBeenCalledWith(expect.objectContaining({ name: 'subagent:delegation' }))
     expect(bench.append).toHaveBeenNthCalledWith(1, 'sandbox/mode', { mode: 'workspace-write', source: 'delegation' })
     expect(bench.append).toHaveBeenNthCalledWith(2, 'approval/policy', { policy: 'never', source: 'delegation' })
+    await bench.invokePreStep()
+    expect(bench.append).toHaveBeenNthCalledWith(3, 'subagent/descriptor', {
+      version: 2,
+      mode: 'one-shot',
+      provider: 'multi-version',
+      label: 'multi-version candidate version-01',
+    })
     expect(bench.attachments.saveImages).toHaveBeenCalledWith([
       { data: Uint8Array.of(1, 2, 3), mediaType: 'image/png', name: 'a.png' },
     ])
@@ -170,7 +192,7 @@ describe('DSH runtime adapters', () => {
     const bench = runtime('unused')
     const idle = Promise.withResolvers<void>()
     ;(bench.create as ReturnType<typeof vi.fn>).mockImplementationOnce(async (options: { setup?: (ctx: unknown) => void }) => {
-      options.setup?.({ systemPrompt: { context: bench.promptContext } })
+      options.setup?.({ systemPrompt: { context: bench.promptContext }, on: () => {} })
       const handle = await runtime('unused').create({})
       handle.agent.whenIdle = vi.fn(() => idle.promise)
       handle.agent.cancel = bench.cancel

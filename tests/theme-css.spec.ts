@@ -8,7 +8,7 @@ describe('multi-version theme contract', () => {
     const css = await readFile(stylesheet, 'utf8')
 
     expect(css).toContain('background: var(--dsw-alias-bg-module-platform)')
-    expect(css).toContain('background: var(--dsw-alias-markdown-code-block)')
+    expect(css).toContain('color: var(--dsw-alias-label-secondary)')
     expect(css).not.toContain('--dsh-color-')
     expect(css).not.toContain('#fff')
   })
