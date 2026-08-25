@@ -1,0 +1,261 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.trigger {
+  flex: none;
+}
+
+.configDialog {
+  width: min(380px, 100%);
+  max-height: calc(100vh - 48px);
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 112px;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.numberInput {
+  box-sizing: border-box;
+  width: 112px;
+}
+
+.plannerField {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: var(--dsw-alias-label-primary);
+  font-size: 13px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.plannerField input {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--dsw-alias-button-primary-fill);
+  cursor: pointer;
+}
+
+.plannerField input:focus-visible {
+  outline: 2px solid var(--dsw-alias-border-l4);
+  outline-offset: 2px;
+}
+
+.plannerField input:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.output {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-bg-layer-1);
+  padding: 10px 12px;
+}
+
+.output > span {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.output code {
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-markdown-code-block-small);
+  overflow-wrap: anywhere;
+}
+
+.warning {
+  margin: 0;
+  color: var(--dsw-alias-state-error-primary);
+  font-size: 12px;
+  line-height: 18px;
+  overflow-wrap: anywhere;
+}
+
+.notice {
+  max-width: 260px;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.runNode {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  gap: 8px;
+}
+
+.runPlaceholder {
+  box-sizing: border-box;
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-module-platform);
+  color: var(--dsw-alias-label-secondary);
+  font: var(--dsw-font-s-14);
+}
+
+.runCard {
+  display: grid;
+  min-width: 0;
+  gap: 8px;
+  color: var(--dsw-alias-label-primary);
+}
+
+.runHeader,
+.versionRow,
+.versionActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.runHeader {
+  box-sizing: border-box;
+  min-height: 48px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-module-platform);
+}
+
+.runMeta,
+.versionRow > div:first-child {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+  color: var(--dsw-alias-label-tertiary);
+  font: var(--dsw-font-xs-13);
+}
+
+.versionList {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0 0 0 16px;
+  list-style: none;
+}
+
+.versionRow {
+  min-height: 40px;
+  padding: 2px 8px 2px 0;
+}
+
+.runHeader > div,
+.versionRow > div:first-child {
+  min-width: 0;
+}
+
+.runHeader strong,
+.versionRow strong {
+  color: var(--dsw-alias-label-primary);
+  overflow-wrap: anywhere;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.versionRow > div:first-child {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.versionRow span {
+  overflow-wrap: anywhere;
+}
+
+.versionActions {
+  flex: none;
+}
+
+.versionActions > span {
+  color: var(--dsw-alias-label-tertiary);
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.resultDialog {
+  width: min(760px, 100%);
+  max-height: min(82vh, 860px);
+}
+
+.resultBody {
+  display: grid;
+  gap: 12px;
+  min-height: 0;
+}
+
+.resultState {
+  margin: 0;
+  color: var(--dsw-alias-label-secondary);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.resultContent {
+  box-sizing: border-box;
+  min-height: 180px;
+  max-height: min(58vh, 640px);
+  overflow: auto;
+  margin: 0;
+  border: 1px solid var(--dsw-alias-border-l2);
+  border-radius: 10px;
+  background: var(--dsw-alias-markdown-code-block);
+  color: var(--dsw-alias-label-primary);
+  padding: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: var(--dsw-font-markdown-code-block);
+}
+
+@supports (height: 100dvh) {
+  .configDialog {
+    max-height: calc(100dvh - 48px);
+  }
+}
+
+@media (max-width: 520px) {
+  .field {
+    grid-template-columns: minmax(0, 1fr) 96px;
+  }
+
+  .numberInput {
+    width: 96px;
+  }
+
+  .runHeader,
+  .versionRow {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .resultDialog {
+    width: 100%;
+  }
+}

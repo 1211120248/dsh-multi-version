@@ -1,0 +1,4 @@
+# Standalone bilingual README consistency record (git blob hashes).
+# Run `pnpm docs:write-pair` after updating both language versions.
+README.md: 90c712dcc828eea70bb70d22f3cea4a136c4a43c
+README.zh.md: 92fd0acb8fb65af6e653c04f0f2d968e28e2b623

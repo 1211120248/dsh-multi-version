@@ -1,0 +1,7 @@
+# bundle patch for the multi-version plugin: inserts its plugin row into the web
+# profile roster. Applied as a profile bundle layer (the `dsh.bundle.patch`
+# manifest field); install with
+# `dsh plugin --profile web add link:/absolute/path/to/dsh-multi-version`.
+- insert:
+    - id: ui-multi-version
+      name: '@linxin666/dsh-client-ui-multi-version'

@@ -1,0 +1,78 @@
+export const NS = 'multiVersion' as const
+
+export const zh = {
+  'button': '多版本',
+  'title': '多版本运行',
+  'count': '版本数量',
+  'planner': '使用规划器',
+  'concurrency': '并发数量',
+  'output': '输出位置',
+  'outputValue': '当前工作区/.multi-version/<运行编号>/',
+  'cancel': '取消',
+  'start': '开始生成',
+  'starting': '正在创建运行…',
+  'unavailable': '当前 DSH 缺少兼容的原子富输入服务',
+  'started': '已创建运行 {runId}',
+  'draftPreserved': '输入框在提交期间发生变化，新草稿已保留。',
+  'runCount': '{count} 个版本',
+  'versionFallback': '版本 {index}',
+  'runPlanner': '规划器：{value}',
+  'yes': '开启',
+  'no': '关闭',
+  'openResult': '查看完整结果',
+  'loadingResult': '正在读取结果…',
+  'closeResult': '关闭',
+  'cancelRun': '取消全部',
+  'runLoading': '正在读取运行状态…',
+  'runUnavailable': '暂时无法读取此运行',
+  'phase.preparing': '准备工作区',
+  'phase.planning': '生成规划',
+  'phase.running': '运行中',
+  'phase.completed': '已完成',
+  'phase.cancelled': '已取消',
+  'phase.failed': '失败',
+  'phase.interrupted': '已中断',
+} as const
+
+export type MultiVersionLocaleKey = keyof typeof zh
+
+export const en: Record<MultiVersionLocaleKey, string> = {
+  'button': 'Versions',
+  'title': 'Multi-version run',
+  'count': 'Version count',
+  'planner': 'Use planner',
+  'concurrency': 'Concurrency',
+  'output': 'Output',
+  'outputValue': 'Current workspace/.multi-version/<run-id>/',
+  'cancel': 'Cancel',
+  'start': 'Start',
+  'starting': 'Creating run…',
+  'unavailable': 'The current DSH runtime lacks compatible atomic rich-input services',
+  'started': 'Run {runId} created',
+  'draftPreserved': 'The composer changed during admission; the newer draft was preserved.',
+  'runCount': '{count} versions',
+  'versionFallback': 'Version {index}',
+  'runPlanner': 'Planner: {value}',
+  'yes': 'on',
+  'no': 'off',
+  'openResult': 'View full result',
+  'loadingResult': 'Loading result…',
+  'closeResult': 'Close',
+  'cancelRun': 'Cancel all',
+  'runLoading': 'Loading run status…',
+  'runUnavailable': 'This run is temporarily unavailable',
+  'phase.preparing': 'Preparing workspace',
+  'phase.planning': 'Planning',
+  'phase.running': 'Running',
+  'phase.completed': 'Completed',
+  'phase.cancelled': 'Cancelled',
+  'phase.failed': 'Failed',
+  'phase.interrupted': 'Interrupted',
+}
+
+declare module '@deepseek-ai/dsh-client-ui-slots' {
+  interface LocaleNamespaceMap {
+    /** Multi-version input control and transcript-run copy. */
+    multiVersion: MultiVersionLocaleKey
+  }
+}
