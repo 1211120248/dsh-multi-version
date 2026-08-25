@@ -51,9 +51,31 @@ function sources(): RuntimeSources {
 
 const COMMAND_NAME = 'multi-version'
 const TERMINAL_PHASES = new Set<RunPhase>(['completed', 'cancelled', 'failed', 'interrupted'])
+const MAX_SESSION_TITLE_BYTES = 80
 
 function commandId(runId: string): string {
   return `multi-version:${runId}`
+}
+
+/** Derive a safe, bounded title accepted by DSH's standard title configuration. */
+function titleFromPromptPreview(preview: string): string | undefined {
+  const normalized = preview
+    .replace(/(?:\u001B\]|\u009D)(?:(?!\u0007|\u001B\\)[\s\S])*(?:\u0007|\u001B\\|$)/gu, '')
+    .replace(/(?:\u001B\[|\u009B)[0-?]*[ -/]*[@-~]/gu, '')
+    .replace(/\u001B[@-_]/gu, '')
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B\u200E\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/gu, '')
+    .replace(/\s+/gu, ' ')
+    .trim()
+  if (normalized === '') return undefined
+  let used = 0
+  let title = ''
+  for (const character of normalized) {
+    const bytes = Buffer.byteLength(character, 'utf8')
+    if (used + bytes > MAX_SESSION_TITLE_BYTES) break
+    title += character
+    used += bytes
+  }
+  return title === '' ? undefined : title
 }
 
 function loopback(address: string | undefined): boolean {
@@ -130,6 +152,14 @@ export class MultiVersionHostService {
     const id = commandId(record.id)
     let started = agent.session.events.some(event => event.type === 'command/run' && event.data?.commandId === id)
     if (!started && reason === 'started') {
+      const title = titleFromPromptPreview(record.promptPreview)
+      if (title !== undefined && !agent.session.events.some(event => event.type === 'session/title')) {
+        agent.session.append('session/title', {
+          title,
+          messageSeqs: [],
+          source: { kind: 'user' },
+        })
+      }
       agent.session.append('command/run', {
         commandId: id,
         name: COMMAND_NAME,

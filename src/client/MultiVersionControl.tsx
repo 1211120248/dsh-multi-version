@@ -18,7 +18,6 @@ export interface MultiVersionText {
   readonly start: string
   readonly starting: string
   readonly unavailable: string
-  readonly started: (runId: string) => string
   readonly draftPreserved: string
 }
 
@@ -35,7 +34,6 @@ export function textFromDictionary(dictionary: Record<MultiVersionLocaleKey, str
     start: dictionary.start,
     starting: dictionary.starting,
     unavailable: dictionary.unavailable,
-    started: runId => dictionary.started.replace('{runId}', runId),
     draftPreserved: dictionary.draftPreserved,
   }
 }
@@ -73,7 +71,7 @@ export function MultiVersionControl({ sessionId, controller, hasSubmission, text
     setNotice(undefined)
     try {
       const result = await controller.start(sessionId, options)
-      setNotice(result.composerCommitted ? text.started(result.runId) : `${text.started(result.runId)} ${text.draftPreserved}`)
+      if (!result.composerCommitted) setNotice(text.draftPreserved)
       onStarted?.(result.runId)
       setOpen(false)
     } catch (error) {

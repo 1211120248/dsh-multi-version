@@ -45,5 +45,6 @@ describe('MultiVersionControl', () => {
 
     await waitFor(() => expect(start).toHaveBeenCalledTimes(1))
     expect(start.mock.calls[0]![0].options).toEqual({ count: 4, usePlanner: false, concurrency: 3 })
+    expect(screen.queryByRole('status')).toBeNull()
   })
 })

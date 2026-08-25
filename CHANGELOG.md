@@ -10,8 +10,15 @@ and this project follows [Semantic Versioning](https://semver.org/).
 
 - Replaced full-response result dialogs with per-version status, duration, and
   concise summaries plus a workspace-relative generated-file location.
+- Removed the separate run-created notice; the transcript run node is the
+  single progress surface.
 - Marked transient candidate and planner children with DSH's one-shot
   subagent descriptor so session surfaces classify them correctly.
+
+### Fixed
+
+- Starting a run in a blank session now synchronizes its prompt preview to the
+  parent session title without overwriting an existing title.
 
 ### Added
 

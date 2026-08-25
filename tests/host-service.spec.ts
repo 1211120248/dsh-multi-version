@@ -93,18 +93,51 @@ describe('MultiVersionHostService', () => {
     const internal = service.coordinator.snapshot().find(run => run.id === runId)
     expect(internal).toBeDefined()
     expect(runtime.childCwds.every(cwd => cwd.startsWith(internal!.runDirectory))).toBe(true)
-    expect(runtime.parent.session.append).toHaveBeenCalledTimes(2)
-    expect(runtime.parent.session.append).toHaveBeenNthCalledWith(1, 'command/run', {
+    expect(runtime.parent.session.append).toHaveBeenCalledTimes(3)
+    expect(runtime.parent.session.append).toHaveBeenNthCalledWith(1, 'session/title', {
+      title: 'question',
+      messageSeqs: [],
+      source: { kind: 'user' },
+    })
+    expect(runtime.parent.session.append).toHaveBeenNthCalledWith(2, 'command/run', {
       commandId: `multi-version:${runId}`,
       name: 'multi-version',
       args: runId,
       source: { kind: 'user' },
     })
-    expect(runtime.parent.session.append).toHaveBeenNthCalledWith(2, 'command/done', {
+    expect(runtime.parent.session.append).toHaveBeenNthCalledWith(3, 'command/done', {
       commandId: `multi-version:${runId}`,
       kind: 'success',
       text: '2 versions completed.',
     })
+  })
+
+  it('keeps an existing parent session title unchanged', async () => {
+    const workspace = await mkdtemp(join(tmpdir(), 'dsh-multi-host-title-'))
+    roots.push(workspace)
+    await writeFile(join(workspace, 'source.txt'), 'base')
+    const runtime = fakeRuntime(workspace)
+    runtime.parent.session.events.push({
+      type: 'session/title',
+      data: { title: '已有会话标题', messageSeqs: [], source: { kind: 'user' } },
+    })
+    const service = new MultiVersionHostService(runtime.agents as never, runtime.attachments as never)
+
+    const result = await service.action({
+      requestId: 'request-title',
+      action: {
+        kind: 'start',
+        request: {
+          sessionId: 'session-1',
+          submission: { preview: '新的多版本请求', parts: [{ type: 'text', text: '新的多版本请求' }] },
+          options: { count: 2, usePlanner: false, concurrency: 2 },
+        },
+      },
+    })
+    const runId = (result as { value: { runId: string } }).value.runId
+    await service.coordinator.wait(runId)
+
+    expect(runtime.parent.session.append).not.toHaveBeenCalledWith('session/title', expect.anything())
   })
 
   it('fails malformed browser actions before creating work', async () => {
