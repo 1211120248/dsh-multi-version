@@ -2,48 +2,54 @@
 
 `@linxin666/dsh-client-ui-multi-version`
 
-English | [中文](README.zh.md)
+中文说明 | [中文镜像](README.zh.md)
 
-An independent, open-source DeepSeek Harness (DSH) Web plugin that turns one rich prompt into multiple isolated candidate runs. It provides optional planning, bounded parallelism, durable progress in the conversation, complete result viewing, and deterministic local summaries.
+一个独立、开源的 DeepSeek Harness（DSH）Web 插件，可把一次富输入请求转化为多个相互隔离的候选运行，并提供可选规划、受限并行、会话内持久进度、精简版本摘要和确定性的本地摘要。
 
-> This independent community plugin uses DSH's npm and Cordis bundle format and targets the DSH Web profile.
+> 这是面向 DSH Web profile 的独立社区插件，使用 DSH 原生的 npm 与 Cordis bundle 格式。
 
-## Why Multi-Version
+## 界面预览
 
-A single agent run gives you one implementation path. That is efficient when the direction is already clear, but less useful when you want to compare architectures, writing approaches, or solution strategies before choosing one.
+![收起左侧栏后的多版本运行设置界面](docs/images/multi-version-settings.jpg)
 
-DSH Multi-Version captures the submission once, creates clean workspace copies, and runs fresh child agents against those copies. The source workspace remains untouched, while every candidate keeps its own response and file changes for inspection.
+上图截自本地 DSH Web 的实际界面：左侧栏已收起，示例提示仅用于展示，未发送或启动运行。
 
-## Product highlights
+## 为什么需要多版本
 
-- Start 2 to 20 candidate versions from the normal DSH composer.
-- Preserve text, structured references, and pending images through DSH's official rich-input services instead of scraping the page DOM.
-- Optionally use one planner to produce an exact set of distinct candidate briefs before execution.
-- Run up to 8 candidates concurrently, with each candidate in its own writable workspace created from one common base snapshot.
-- Follow durable status inside the ordinary conversation transcript, cancel the whole run, and open the full response of every completed candidate.
-- Recover finished history after a Host restart and generate local navigation files without a hidden judge, ranker, merger, or summary model.
+单次 Agent 运行只会给出一条实现路径。方向已经明确时，这很高效；但如果你希望先比较不同架构、写作方式或解决策略，再决定采用哪一种，一条路径往往不够。
 
-## How a run works
+DSH Multi-Version 只捕获一次输入，创建干净的工作区副本，再让全新的子 Agent 分别在这些副本中运行。来源工作区保持不变，每个候选的回复与文件改动都单独保留，便于检查。
 
-1. The Client atomically captures the current DSH composer submission.
-2. The Host derives the trusted source workspace from the active session and creates one base snapshot.
-3. Planner mode, when enabled, creates exactly the requested number of distinct briefs in an isolated planner workspace.
-4. Fresh child agents run with the parent model route and preset composition in separate candidate workspaces under bounded concurrency.
-5. The Host stores status and responses, then writes deterministic `SUMMARY.md` and `index.json` navigation files.
+## 产品亮点
 
-## Output layout
+- 从 DSH 普通输入框一次启动 2 至 20 个候选版本。
+- 通过 DSH 官方富输入服务保留文字、结构化引用和待发送图片，不抓取页面 DOM。
+- 可选用一个规划器，在候选执行前严格生成指定数量且互不重复的 brief。
+- 最多并发运行 8 个候选；每个候选都使用从同一基础快照创建的独立可写工作区。
+- 在普通会话流中查看每个版本的状态、耗时和简介，完成后到该版本的隔离工作区检查生成文件。
+- Host 重启后恢复已完成历史，并在本地生成导航文件，不引入隐藏的评审、排名、合并或摘要模型。
 
-Each run is stored below the active source workspace:
+## 一次运行如何执行
+
+1. Client 原子捕获当前 DSH 输入框中的完整提交内容。
+2. Host 根据活跃会话解析可信的来源工作区，并创建一份基础快照。
+3. 开启规划器时，在隔离的规划工作区中严格生成指定数量的不同 brief。
+4. 全新的子 Agent 继承父会话的模型路由和预设组合，在不同候选工作区中按并发上限运行。
+5. Host 持久化状态与回复，再写入确定性的 `SUMMARY.md` 和 `index.json` 导航文件。
+
+## 输出结构
+
+每次运行都保存在活跃来源工作区下：
 
 ```text
-<workspace>/.multi-version/<run-id>/
+<工作区>/.multi-version/<运行编号>/
 ├── request.json
 ├── run.json
-├── planner.json                # only with planner mode
+├── planner.json                # 仅规划器模式
 ├── SUMMARY.md
 ├── index.json
 ├── base-snapshot/
-├── planner/                    # only with planner mode
+├── planner/                    # 仅规划器模式
 │   └── workspace/
 └── versions/
     ├── version-01/
@@ -54,20 +60,20 @@ Each run is stored below the active source workspace:
     └── version-02/
 ```
 
-## Requirements
+## 环境要求
 
-| Component | Requirement |
+| 组件 | 要求 |
 | --- | --- |
-| DSH | `0.1.1-rc.2` tested and supported |
+| DSH | 已测试并支持 `0.1.1-rc.2` |
 | Profile | Web |
-| Node.js | `^22.19.0` or `>=24.0.0` |
-| Package manager | pnpm 11 |
+| Node.js | `^22.19.0` 或 `>=24.0.0` |
+| 包管理器 | pnpm 11 |
 
-The plugin feature-detects the required composer services. On an incompatible runtime, the Versions control remains unavailable instead of silently downgrading rich input.
+插件会探测所需的输入框服务。运行时不兼容时，“多版本”控件保持不可用，不会静默降级并丢失富输入。
 
-## Install
+## 安装
 
-Build this independent project, then add it to the DSH Web profile as a linked bundle plugin:
+先构建这个独立项目，再把它作为链接式 bundle 插件加入 DSH Web profile：
 
 ```sh
 pnpm install
@@ -75,68 +81,68 @@ pnpm build
 dsh plugin --profile web add link:/absolute/path/to/dsh-multi-version
 ```
 
-The package declares its DSH Client injections in `package.json` and inserts the `ui-multi-version` bundle row through `cordis.patch.yml`. No changes to a DSH source checkout are required.
+本包在 `package.json` 中声明 DSH Client 注入，并通过 `cordis.patch.yml` 插入 `ui-multi-version` bundle 行；无需修改 DSH 源码仓库。
 
-## Use
+## 使用方法
 
-1. Open a DSH Web session with an active workspace and prepare a prompt.
-2. Select **Versions** in the composer toolbar.
-3. Choose the version count, planner mode, and concurrency.
-4. Start the run and follow its status in the conversation transcript; open any completed version to inspect the full response.
+1. 打开具有活跃工作区的 DSH Web 会话，并准备好请求内容。
+2. 在输入工具栏选择 **多版本**。
+3. 设置版本数量、是否使用规划器和并发数量。
+4. 开始运行后在会话流中查看每个版本的状态、耗时和简介。结束后按界面显示的相对工作区目录检查生成文件。
 
-## Options
+## 运行选项
 
-| Option | Range | Default | Behavior |
+| 选项 | 范围 | 默认值 | 行为 |
 | --- | --- | --- | --- |
-| Version count | 2-20 | 3 | Number of isolated candidate runs |
-| Use planner | On or off | On | Generates distinct briefs before candidates start |
-| Concurrency | 1-8, not above version count | 3 | Maximum candidates running at once |
+| 版本数量 | 2-20 | 3 | 相互隔离的候选运行数量 |
+| 使用规划器 | 开或关 | 开 | 候选启动前生成不同的 brief |
+| 并发数量 | 1-8，且不超过版本数 | 3 | 同时运行的候选上限 |
 
-`.multiversionignore` accepts workspace-root-relative path prefixes, one per line, with `#` comments. Snapshots always exclude `.git`, `.multi-version`, `node_modules`, `.pnpm-store`, `.cache`, `.next`, `dist`, `build`, and `coverage` directories.
+`.multiversionignore` 支持相对工作区根的路径前缀，每行一项，使用 `#` 写注释。快照始终排除 `.git`、`.multi-version`、`node_modules`、`.pnpm-store`、`.cache`、`.next`、`dist`、`build` 和 `coverage` 目录。
 
-## Compatibility and failure behavior
+## 兼容性与失败行为
 
-- Planner-off candidates receive the same captured submission without hidden version instructions.
-- Planner mode fails if the planner returns malformed, repeated, or incorrectly counted briefs; it never falls back silently.
-- Only a child turn ending as `completed` is successful. Partial output from an interrupted, aborted, blocked, disposed, max-token, or failed turn remains diagnostic.
-- Active work becomes terminally interrupted after Host restart; pending and running candidates become failed, while navigation files are regenerated.
-- Every child handle is disposed after settlement.
+- 关闭规划器时，全部候选接收同一份捕获输入，不添加隐藏的版本指令。
+- 规划器返回格式错误、内容重复或数量不符时，规划模式直接失败，不会静默回退。
+- 只有以 `completed` 结束的子 turn 才算成功；被中断、取消、阻塞、销毁、达到 token 上限或失败的部分输出只保留为诊断信息。
+- Host 重启后，活跃工作会终止为“已中断”，等待中和运行中的候选变为失败，同时重新生成导航文件。
+- 每个子 Agent handle 都会在结束后销毁。
 
-## Security model
+## 安全模型
 
-The Host API lives under `/api/dsh-multi-version/v1` and accepts loopback, same-origin requests only. The browser neither supplies nor receives workspace paths, output paths, commands, or shell text; the Host resolves session and filesystem authority.
+Host API 位于 `/api/dsh-multi-version/v1`，只接受 loopback 同源请求。浏览器既不提供也不接收工作区路径、输出路径、命令或 shell 文本；会话与文件系统权限由 Host 解析。终态会话记录只显示由运行编号派生的固定工作区相对路径模板，不会接收 Host 提供的文件系统路径。
 
-Workspace copying fails closed for absolute symlinks, escaping symlinks, unsupported entries, invalid run paths, and snapshot errors. Candidate copies do not use hard links. Writes use temporary files, fsync, and atomic rename; malformed ledgers are quarantined during recovery.
+遇到绝对符号链接、逃逸符号链接、不支持的条目、非法运行路径或快照错误时，工作区复制会关闭失败。候选副本不使用硬链接。写入采用临时文件、fsync 和原子 rename；恢复时会隔离损坏的账本。
 
-Captured submissions can contain sensitive text and encoded images. Protect `.multi-version` like the source workspace. Candidate children use fixed delegated permissions and approval policy `never`, and cannot widen those permissions from inside the run.
+捕获内容可能包含敏感文字和编码图片，因此应当像保护来源工作区一样保护 `.multi-version`。候选子 Agent 使用固定的委派权限和 `never` 审批策略，无法在运行内部自行扩大权限。
 
-## Known limitations
+## 已知限制
 
-- The compatibility adapter targets concrete DSH `0.1.1-rc.2` composer methods.
-- Full responses are rendered as safe plain text rather than interpreted HTML or formatted Markdown.
-- Live subagent-origin children may still be discoverable through low-level session listing because DSH has no separate durable `internal` visibility.
-- Workspace snapshots are file copies, not filesystem-atomic snapshots; source files must remain stable while the base snapshot is prepared.
-- Retry attempts are not implemented.
-- Adopting a selected candidate back into the source workspace is not implemented.
+- 兼容适配器针对 DSH `0.1.1-rc.2` 的具体输入框方法。
+- 不在 GUI 中重放完整回复；请在 `.multi-version/<运行编号>/versions/<版本编号>/workspace/` 中检查 Word 等生成文件。
+- 候选子 Agent 带有 DSH 的一次性子代理描述符，不继承历史，并在唯一 turn 结束后销毁；多版本结果只保留在父会话记录中。
+- 工作区快照是文件复制，不是文件系统级原子快照；准备基础快照期间，来源文件必须保持稳定。
+- 尚未实现重试 attempt。
+- 尚未实现把选中的候选采用回来源工作区。
 
-## Development
+## 开发
 
-Run the complete local gate from the repository root:
+在仓库根目录运行完整本地门禁：
 
 ```sh
 pnpm check
 pnpm pack --pack-destination ./artifacts
 ```
 
-## Open source and community
+## 开源与社区
 
-The repository includes the files needed for a maintainable open-source project:
+仓库已包含可持续维护开源项目所需的文件：
 
-- [Contributing guide](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Changelog](CHANGELOG.md)
+- [贡献指南](CONTRIBUTING.md)
+- [安全策略](SECURITY.md)
+- [行为准则](CODE_OF_CONDUCT.md)
+- [变更记录](CHANGELOG.md)
 
-## License
+## 许可证
 
-Licensed under the [Apache License 2.0](LICENSE). See [NOTICE](NOTICE) for attribution and the independent community-plugin statement.
+项目使用 [Apache License 2.0](LICENSE)；归属信息与独立社区插件声明见 [NOTICE](NOTICE)。
